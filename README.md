@@ -14,13 +14,13 @@ Device staying operational, two options:
 - battery
 
 What we will need to monitor:
-temperature
-humidity
-pressure
-air quality
-ambient light
-movement
-sound
+- temperature
+- humidity
+- pressure
+- air quality
+- ambient light
+- movement
+- sound
 
 For this, we will be using the following devices:
 
