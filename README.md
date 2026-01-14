@@ -18,9 +18,12 @@ What we will need to monitor:
 - humidity
 - pressure
 - air quality
-- ambient light
 - movement
 - sound
 
 For this, we will be using the following devices:
-
+- BMP180: temperature and pressure
+- HR202: humidity
+- MQ-7: air quality, specifically carbon monoxide
+- 0104110000000347: movement
+- 0104110000082152: sound
