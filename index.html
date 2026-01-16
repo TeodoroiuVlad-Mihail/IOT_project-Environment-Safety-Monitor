@@ -1,0 +1,66 @@
+<!-- index.html --> 
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>CoAP Web GUI</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 20px auto; }
+    button { margin: 5px; padding: 6px 12px; }
+    textarea { width: 100%; height: 120px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🌐 CoAP Web GUI</h1>
+
+  <button onclick="discover()">Discover</button>
+  <button onclick="getLed()">Get /led</button>
+  <button onclick="toggleLed('on')">LED ON</button>
+  <button onclick="toggleLed('off')">LED OFF</button>
+
+  <h3>Custom GET:</h3>
+  <input id="customPath" placeholder="/net/rssi or /sys/uptime">
+  <button onclick="customGet()">Send GET</button>
+
+
+  <h3>Echo:</h3>
+    <input id="echoInput" placeholder="Ceva">
+    <button onclick="sendEcho()">Send Echo</button>
+
+  <h3>Response:</h3>
+  <textarea id="output"></textarea>
+
+  <script>
+    async function discover() {
+      const r = await fetch(`/coap?path=/.well-known/core`);
+      document.getElementById('output').value = await r.text();
+    }
+    async function getLed() {
+      const r = await fetch(`/coap?path=/led`);
+      document.getElementById('output').value = await r.text();
+    }
+    async function toggleLed(state) {
+      const r = await fetch(`/coap`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ path: '/led', payload: state })
+      });
+      document.getElementById('output').value = await r.text();
+    }
+    async function customGet() {
+      const path = document.getElementById('customPath').value;
+      const r = await fetch(`/coap?path=${path}`);
+      document.getElementById('output').value = await r.text();
+    }
+    async function sendEcho() {
+        const msg = document.getElementById('echoInput').value;
+        const r = await fetch('/echo', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ message: msg })
+        });
+        document.getElementById('output').value = await r.text();
+    }
+  </script>
+</body>
+</html>

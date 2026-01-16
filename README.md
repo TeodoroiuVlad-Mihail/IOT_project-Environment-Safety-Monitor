@@ -27,3 +27,7 @@ For this, we will be using the following devices:
 - MQ-7: air quality, specifically carbon monoxide
 - 0104110000000347: movement
 - 0104110000082152: sound
+
+
+
+We will be using lab 3 for the web interface
