@@ -5,3 +5,4 @@
 
 void initWiFi();
 void sendData(const SensorData& data);
+void netLoop();

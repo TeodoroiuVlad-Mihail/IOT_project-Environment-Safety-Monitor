@@ -50,4 +50,30 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+
+app.get('/sensors', (req, res) => {
+  const reqCoap = coap.request(`coap://${COAP_HOST}:${COAP_PORT}/sensors`);
+
+  reqCoap.on('response', coapRes => {
+    let data = '';
+    coapRes.on('data', chunk => data += chunk);
+    coapRes.on('end', () => {
+      try {
+        res.json(JSON.parse(data));
+      } catch (e) {
+        res.status(500).send('Invalid JSON from sensor');
+      }
+    });
+  });
+
+  reqCoap.on('error', err => {
+    res.status(500).send(err.message);
+  });
+
+  reqCoap.end();
+});
+
+
+
+
 app.listen(3000, () => console.log('HTTP-CoAP proxy on http://localhost:3000'));

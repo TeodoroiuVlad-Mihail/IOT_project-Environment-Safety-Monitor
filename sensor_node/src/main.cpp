@@ -19,9 +19,13 @@ void setup() {
 }
 
 void loop() {
-    SensorData data = readSensors();
-    detectEvents(data);
-    sendData(data);
+    netLoop(); // Handle network events
 
-    delay(5000);
+    if (millis() - lastSend >= 5000) {
+        lastSend = millis();
+
+        SensorData data = readSensors();
+        detectEvents(data);
+        sendData(data);
+    }
 }

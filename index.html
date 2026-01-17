@@ -18,6 +18,8 @@
   <button onclick="toggleLed('on')">LED ON</button>
   <button onclick="toggleLed('off')">LED OFF</button>
 
+  <button onclick="getSensors()">Get Sensors</button>
+
   <h3>Custom GET:</h3>
   <input id="customPath" placeholder="/net/rssi or /sys/uptime">
   <button onclick="customGet()">Send GET</button>
@@ -26,6 +28,18 @@
   <h3>Echo:</h3>
     <input id="echoInput" placeholder="Ceva">
     <button onclick="sendEcho()">Send Echo</button>
+  
+
+
+  <h3>Sensor Values:</h3>
+  <ul>
+    <li>Temperature: <span id="temp">-</span> °C</li>
+    <li>Humidity: <span id="hum">-</span> %</li>
+    <li>Pressure: <span id="pres">-</span> hPa</li>
+    <li>Gas (CO): <span id="gas">-</span></li>
+    <li>Sound: <span id="sound">-</span></li>
+    <li>Vibration: <span id="vibration">-</span></li>
+  </ul>
 
   <h3>Response:</h3>
   <textarea id="output"></textarea>
@@ -50,7 +64,16 @@
     async function customGet() {
       const path = document.getElementById('customPath').value;
       const r = await fetch(`/coap?path=${path}`);
-      document.getElementById('output').value = await r.text();
+      
+      const text = await r.text();
+      document.getElementById('output').value = text;
+
+      try {
+        const json = JSON.parse(text);
+        updateSensors(json);
+      } catch (e) {
+        console.warn("Not JSON:", text);
+      }
     }
     async function sendEcho() {
         const msg = document.getElementById('echoInput').value;
@@ -61,6 +84,21 @@
         });
         document.getElementById('output').value = await r.text();
     }
+    async function updateSensors(data) {
+      document.getElementById('temp').textContent = data.temperature;
+      document.getElementById('hum').textContent = data.humidity;
+      document.getElementById('pres').textContent = data.pressure;
+      document.getElementById('gas').textContent = data.gas;
+      document.getElementById('sound').textContent = data.sound ? "YES" : "NO";
+      document.getElementById('vibration').textContent = data.vibration ? "YES" : "NO";
+    }
+    async function getSensors() {
+      const r = await fetch(`/coap?path=/sensors`);
+      const data = await r.json();
+      updateSensors(data);
+      document.getElementById('output').value = JSON.stringify(data, null, 2);
+    }
+    setInterval(getSensors, 5000);
   </script>
 </body>
 </html>
