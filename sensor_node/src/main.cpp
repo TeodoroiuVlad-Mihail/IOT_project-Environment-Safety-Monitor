@@ -5,6 +5,8 @@
 #include "sensors.h"
 #include "net.h"
 
+unsigned long lastSend = 0;
+
 void setup() {
     Serial.begin(115200);
     delay(1000);

@@ -16,6 +16,12 @@
 WiFiUDP udp;
 Coap coap(udp);
 
+
+void onCoapResponse(CoapPacket &packet, IPAddress ip, int port) {
+    // You can just print response for now
+    Serial.print("CoAP response from "); Serial.println(ip);
+}
+
 void initWiFi() {
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);

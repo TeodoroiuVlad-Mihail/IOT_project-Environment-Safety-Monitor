@@ -4,9 +4,10 @@
 #include <Arduino.h>
 #include "pins.h"
 #include <Wire.h>
-#include <Adafruit_BMP280.h>
+#include <Adafruit_BMP085.h>
+#include "config.h"
 
-Adafruit_BMP280 bmp;
+Adafruit_BMP085 bmp;
 
 void initSensors() {
     // init I2C, ADC, GPIO
@@ -21,7 +22,7 @@ void initSensors() {
 
 
     if (!bmp.begin()) {
-    Serial.println("BMP280 not detected!");
+    Serial.println("BMP085 not detected!");
 }
 }
 
