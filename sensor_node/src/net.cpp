@@ -15,9 +15,47 @@
 WiFiUDP udp;
 Coap coap(udp);
 
-COAP_TYPE coapType = COAP_TYPE(0);  // COAP_TYPE_CON;
-COAP_METHOD coapMethod = COAP_METHOD(2);  // COAP_METHOD_POST;
-COAP_CONTENT_TYPE coapContentType = COAP_CONTENT_TYPE(50); // COAP_CONTENT_TYPE_APPLICATION_JSON;
+// Helper to reply to CoAP GET
+void coapSendText(IPAddress ip, int port, CoapPacket &req, const char* text) {
+    coap.sendResponse(ip, port, req.messageid,
+                      text, strlen(text),
+                      COAP_RESPONSE_CODE(205), // 2.05 Content
+                      COAP_TEXT_PLAIN,
+                      req.token, req.tokenlen);
+}
+
+// Sensor resource handlers
+void h_temperature(CoapPacket &packet, IPAddress ip, int port) {
+    char buf[16];
+    snprintf(buf, sizeof(buf), "%.2f", readTemperature());
+    coapSendText(ip, port, packet, buf);
+}
+
+void h_humidity(CoapPacket &packet, IPAddress ip, int port) {
+    char buf[16];
+    snprintf(buf, sizeof(buf), "%.2f", readHumidity());
+    coapSendText(ip, port, packet, buf);
+}
+
+void h_pressure(CoapPacket &packet, IPAddress ip, int port) {
+    char buf[16];
+    snprintf(buf, sizeof(buf), "%.2f", readPressure());
+    coapSendText(ip, port, packet, buf);
+}
+
+void h_gas(CoapPacket &packet, IPAddress ip, int port) {
+    char buf[16];
+    snprintf(buf, sizeof(buf), "%d", readGas());
+    coapSendText(ip, port, packet, buf);
+}
+
+void h_vibration(CoapPacket &packet, IPAddress ip, int port) {
+    coapSendText(ip, port, packet, detectVibration() ? "1" : "0");
+}
+
+void h_sound(CoapPacket &packet, IPAddress ip, int port) {
+    coapSendText(ip, port, packet, detectSound() ? "1" : "0");
+}
 
 void onCoapResponse(CoapPacket &packet, IPAddress ip, int port) {
     Serial.print("CoAP response from ");
@@ -36,48 +74,22 @@ void initWiFi() {
     Serial.print(F("Wi-Fi OK. IP: "));
     Serial.println(WiFi.localIP());
 
-      // Bind UDP so we can receive responses (use standard CoAP port or 0 for ephemeral)
+    // Bind UDP so we can receive responses
     udp.begin(5683);
     
     // Register response handler and start CoAP
     coap.response(onCoapResponse);
     coap.start();
+
+    coap.server(h_temperature, "sensors/temperature");
+    coap.server(h_humidity,    "sensors/humidity");
+    coap.server(h_pressure,    "sensors/pressure");
+    coap.server(h_gas,         "sensors/gas");
+    coap.server(h_vibration,   "sensors/vibration");
+    coap.server(h_sound,       "sensors/sound");
+
+    Serial.println("CoAP server ready.");
 }
-
-void sendData(const SensorData& data) {
-    if (WiFi.status() != WL_CONNECTED) {
-        return;
-    }
-
-    StaticJsonDocument<256> doc;
-    doc["node"]        = NODE_ID;
-    doc["temperature"] = data.temperature;
-    doc["humidity"]    = data.humidity;
-    doc["pressure"]    = data.pressure;
-    doc["gas"]         = data.gas;
-    doc["sound"]       = data.sound;
-    doc["vibration"]   = data.vibration;
-
-    char payload[256];
-    serializeJson(doc, payload);
-
-    // Send CoAP POST to server
-    Serial.println("Sending CoAP POST with payload:");
-    Serial.println(payload);
-    coap.send(
-        SERVER_IP,
-        SERVER_COAP_PORT,
-        SERVER_URL,
-        coapType,
-        coapMethod,
-        NULL,
-        0,
-        (const uint8_t*)payload,
-        strlen(payload),
-        coapContentType
-    );
-}
-
 
 void netLoop() {
     coap.loop();

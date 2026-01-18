@@ -11,7 +11,7 @@ const payload = JSON.stringify({
 });
 
 const req = coap.request({
-    hostname: 'localhost',   // or your server IP
+    hostname: '192.168.100.21',   // or your server IP
     port: 5683,
     method: 'POST',
     pathname: '/sensors'

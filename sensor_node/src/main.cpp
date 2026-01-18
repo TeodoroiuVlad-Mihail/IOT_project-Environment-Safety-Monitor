@@ -22,12 +22,4 @@ void setup() {
 
 void loop() {
     netLoop(); // Handle network events
-
-    if (millis() - lastSend >= 5000) {
-        lastSend = millis();
-
-        SensorData data = readSensors();
-        detectEvents(data);
-        sendData(data);
-    }
 }

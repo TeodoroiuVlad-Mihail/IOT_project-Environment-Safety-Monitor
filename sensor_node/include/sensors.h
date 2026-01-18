@@ -18,3 +18,10 @@ struct SensorData {
 void initSensors();
 SensorData readSensors();
 void detectEvents(SensorData& data);
+
+float readTemperature();
+float readHumidity();
+float readPressure();
+int   readGas();
+bool  detectVibration();
+bool  detectSound();

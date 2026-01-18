@@ -71,7 +71,3 @@ SensorData readSensors() {
     Serial.println("Sound: " + String(d.sound));
     return d;
 }
-
-void detectEvents(SensorData& d) {
-    // todo: implement event detection logic if needed
-}
