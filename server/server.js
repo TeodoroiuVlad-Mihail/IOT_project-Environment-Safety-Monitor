@@ -4,7 +4,12 @@ const coap = require('coap');
 const express = require('express');
 const app = express();
 
-const ESP32_IP = '192.168.100.41'; // esp ip
+
+// Nodes configuration
+const NODES = [
+  { id: 'node1', ip: '192.168.100.41', port: 5683 },
+  { id: 'node2', ip: '192.168.100.42', port: 5683 }
+];
 const COAP_PORT = 5683;
 
 // List of sensor paths to query
@@ -21,11 +26,11 @@ const SENSOR_PATHS = [
 let latestData = {};
 
 // Helper to query a single sensor via CoAP GET
-function querySensor(path) {
+function querySensor(node, path) {
   return new Promise((resolve, reject) => {
     const req = coap.request({
-      hostname: ESP32_IP,
-      port: COAP_PORT,
+      hostname: node.ip,
+      port: node.port,
       method: 'GET',
       pathname: path,
       retrySend: 0 // disable automatic retries
@@ -36,38 +41,50 @@ function querySensor(path) {
     let data = '';
     req.on('response', (res) => {
       res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve({ path, value: data }));
+      res.on('end', () => resolve({ node: node.id, path, value: data }));
     });
 
-    req.on('error', (err) => reject(err));
+    req.on('error', (err) => reject({ node: node.id, path, err }));
     req.end();
   });
 }
 
 // Periodically poll all sensors
-async function pollSensors() {
-  console.log('Polling sensors...');
+async function pollNode(node) {
+  if (!latestData[node.id]) latestData[node.id] = {};
+
   for (const path of SENSOR_PATHS) {
     try {
-      const result = await querySensor(path);
+      const result = await querySensor(node, path);
+      const sensor = result.path.split('/')[1]; // e.g., "temperature"
       // Convert numeric readings where appropriate
-      if (['temperature','humidity','pressure','gas'].includes(result.path.split('/')[1])) {
-        latestData[result.path.split('/')[1]] = parseFloat(result.value);
+      if (['temperature', 'humidity', 'pressure', 'gas'].includes(sensor)) {
+        latestData[node.id][sensor] = parseFloat(result.value);
       } else {
-        latestData[result.path.split('/')[1]] = result.value === '1';
+        latestData[node.id][sensor] = result.value === '1';
       }
     } catch (err) {
-      console.error(`Error querying ${path}:`, err.message);
+      console.error(`Error querying ${err.node} ${err.path}:`, err.err.message);
+      // keep old value if available, do not remove
     }
   }
 }
 
-// Poll sensors every 5 seconds
-setInterval(pollSensors, 5000);
-pollSensors(); // initial poll
+// ===== POLL ALL NODES =====
+async function pollAllNodes() {
+  console.log('Polling all nodes...');
+  for (const node of NODES) {
+    pollNode(node); // don't await to avoid blocking other nodes
+  }
+}
+
+// Poll every 5 seconds
+setInterval(pollAllNodes, 5000);
+pollAllNodes(); // initial poll
 
 /* ================= HTTP SERVER ================= */
 
+// Sebve sensor data as JSON
 app.get('/sensors', (req, res) => {
   if (!Object.keys(latestData).length) {
     return res.status(404).send('No data yet');

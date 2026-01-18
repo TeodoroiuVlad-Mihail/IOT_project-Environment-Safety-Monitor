@@ -5,26 +5,20 @@
   <meta charset="utf-8">
   <title>CoAP Web GUI</title>
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 20px auto; }
+    body { font-family: 'Times New Roman', Times, serif; max-width: 800px; margin: 20px auto; }
     button { margin: 5px; padding: 6px 12px; }
-    textarea { width: 100%; height: 120px; margin-top: 10px; }
+    textarea { width: 100%; height: 150px; margin-top: 10px; }
+    .node { border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; }
+    .node h3 { margin: 0 0 10px 0; }
   </style>
 </head>
 <body>
   <h1>CoAP Web GUI</h1>
   <button onclick="getSensors()">Get Sensor Data</button>
-  
 
-
-  <h3>Sensor Values:</h3>
-  <ul>
-    <li>Temperature: <span id="temp">-</span> °C</li>
-    <li>Humidity: <span id="hum">-</span> %</li>
-    <li>Pressure: <span id="pres">-</span> hPa</li>
-    <li>Gas (CO): <span id="gas">-</span></li>
-    <li>Sound: <span id="sound">-</span></li>
-    <li>Vibration: <span id="vibration">-</span></li>
-  </ul>
+  <div id="nodes-container">
+    <!-- Node data will be dynamically inserted here -->
+  </div>
 
   <h3>Raw JSON:</h3>
   <textarea id="output"></textarea>
@@ -35,28 +29,44 @@
 
     if (!r.ok) {
       document.getElementById('output').value = 'No data yet';
+      document.getElementById('nodes-container').innerHTML = '';
       return;
     }
 
     const data = await r.json();
-    updateSensors(data);
-    document.getElementById('output').value =
-      JSON.stringify(data, null, 2);
+    updateNodes(data);
+    document.getElementById('output').value = JSON.stringify(data, null, 2);
   }
 
-  function updateSensors(data) {
-    document.getElementById('temp').textContent = data.temperature ?? '-';
-    document.getElementById('hum').textContent = data.humidity ?? '-';
-    document.getElementById('pres').textContent = data.pressure ?? '-';
-    document.getElementById('gas').textContent = data.gas ?? '-';
-    document.getElementById('sound').textContent =
-      data.sound ? "YES" : "NO";
-    document.getElementById('vibration').textContent =
-      data.vibration ? "YES" : "NO";
+  function updateNodes(data) {
+    const container = document.getElementById('nodes-container');
+    container.innerHTML = ''; // clear previous
+
+    for (const nodeId in data) {
+      const nodeData = data[nodeId];
+      const div = document.createElement('div');
+      div.className = 'node';
+
+      div.innerHTML = `
+        <h3>${nodeId}</h3>
+        <ul>
+          <li>Temperature: ${nodeData.temperature ?? '-'} °C</li>
+          <li>Humidity: ${nodeData.humidity ?? '-'} %</li>
+          <li>Pressure: ${nodeData.pressure ?? '-'} hPa</li>
+          <li>Gas (CO): ${nodeData.gas ?? '-'}</li>
+          <li>Sound: ${nodeData.sound ? 'YES' : 'NO'}</li>
+          <li>Vibration: ${nodeData.vibration ? 'YES' : 'NO'}</li>
+        </ul>
+      `;
+      container.appendChild(div);
+    }
   }
 
   // Auto-refresh every 5s
   setInterval(getSensors, 5000);
+
+  // Initial fetch
+  getSensors();
 </script>
 
 </body>
