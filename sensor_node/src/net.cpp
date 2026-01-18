@@ -4,7 +4,6 @@
 #include "sensors.h"
 
 #include <WiFi.h>
-#include <HTTPClient.h>
 #include <ArduinoJson.h>
 
 #include <Arduino.h>
@@ -16,10 +15,13 @@
 WiFiUDP udp;
 Coap coap(udp);
 
+COAP_TYPE coapType = COAP_TYPE(0);  // COAP_TYPE_CON;
+COAP_METHOD coapMethod = COAP_METHOD(2);  // COAP_METHOD_POST;
+COAP_CONTENT_TYPE coapContentType = COAP_CONTENT_TYPE(50); // COAP_CONTENT_TYPE_APPLICATION_JSON;
 
 void onCoapResponse(CoapPacket &packet, IPAddress ip, int port) {
-    // You can just print response for now
-    Serial.print("CoAP response from "); Serial.println(ip);
+    Serial.print("CoAP response from ");
+    Serial.println(ip);
 }
 
 void initWiFi() {
@@ -48,7 +50,6 @@ void sendData(const SensorData& data) {
     }
 
     StaticJsonDocument<256> doc;
-
     doc["node"]        = NODE_ID;
     doc["temperature"] = data.temperature;
     doc["humidity"]    = data.humidity;
@@ -60,12 +61,21 @@ void sendData(const SensorData& data) {
     char payload[256];
     serializeJson(doc, payload);
 
-    HTTPClient http;
-    http.begin(SERVER_URL);
-    http.addHeader("Content-Type", "application/json");
-
-    http.POST(payload);
-    http.end();
+    // Send CoAP POST to server
+    Serial.println("Sending CoAP POST with payload:");
+    Serial.println(payload);
+    coap.send(
+        SERVER_IP,
+        SERVER_COAP_PORT,
+        SERVER_URL,
+        coapType,
+        coapMethod,
+        NULL,
+        0,
+        (const uint8_t*)payload,
+        strlen(payload),
+        coapContentType
+    );
 }
 
 

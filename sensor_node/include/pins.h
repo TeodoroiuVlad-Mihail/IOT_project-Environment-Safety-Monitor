@@ -3,7 +3,7 @@
 
 #pragma once
 
-// I2C
+// I2C // Temperature & Pressure sensor (BMP180/BMP085)
 #define PIN_I2C_SDA   21
 #define PIN_I2C_SCL   22
 

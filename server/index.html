@@ -11,23 +11,8 @@
   </style>
 </head>
 <body>
-  <h1>🌐 CoAP Web GUI</h1>
-
-  <button onclick="discover()">Discover</button>
-  <button onclick="getLed()">Get /led</button>
-  <button onclick="toggleLed('on')">LED ON</button>
-  <button onclick="toggleLed('off')">LED OFF</button>
-
-  <button onclick="getSensors()">Get Sensors</button>
-
-  <h3>Custom GET:</h3>
-  <input id="customPath" placeholder="/net/rssi or /sys/uptime">
-  <button onclick="customGet()">Send GET</button>
-
-
-  <h3>Echo:</h3>
-    <input id="echoInput" placeholder="Ceva">
-    <button onclick="sendEcho()">Send Echo</button>
+  <h1>CoAP Web GUI</h1>
+  <button onclick="getSensors()">Get Sensor Data</button>
   
 
 
@@ -41,64 +26,38 @@
     <li>Vibration: <span id="vibration">-</span></li>
   </ul>
 
-  <h3>Response:</h3>
+  <h3>Raw JSON:</h3>
   <textarea id="output"></textarea>
 
-  <script>
-    async function discover() {
-      const r = await fetch(`/coap?path=/.well-known/core`);
-      document.getElementById('output').value = await r.text();
-    }
-    async function getLed() {
-      const r = await fetch(`/coap?path=/led`);
-      document.getElementById('output').value = await r.text();
-    }
-    async function toggleLed(state) {
-      const r = await fetch(`/coap`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ path: '/led', payload: state })
-      });
-      document.getElementById('output').value = await r.text();
-    }
-    async function customGet() {
-      const path = document.getElementById('customPath').value;
-      const r = await fetch(`/coap?path=${path}`);
-      
-      const text = await r.text();
-      document.getElementById('output').value = text;
+<script>
+  async function getSensors() {
+    const r = await fetch('/sensors');
 
-      try {
-        const json = JSON.parse(text);
-        updateSensors(json);
-      } catch (e) {
-        console.warn("Not JSON:", text);
-      }
+    if (!r.ok) {
+      document.getElementById('output').value = 'No data yet';
+      return;
     }
-    async function sendEcho() {
-        const msg = document.getElementById('echoInput').value;
-        const r = await fetch('/echo', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ message: msg })
-        });
-        document.getElementById('output').value = await r.text();
-    }
-    async function updateSensors(data) {
-      document.getElementById('temp').textContent = data.temperature;
-      document.getElementById('hum').textContent = data.humidity;
-      document.getElementById('pres').textContent = data.pressure;
-      document.getElementById('gas').textContent = data.gas;
-      document.getElementById('sound').textContent = data.sound ? "YES" : "NO";
-      document.getElementById('vibration').textContent = data.vibration ? "YES" : "NO";
-    }
-    async function getSensors() {
-      const r = await fetch(`/coap?path=/sensors`);
-      const data = await r.json();
-      updateSensors(data);
-      document.getElementById('output').value = JSON.stringify(data, null, 2);
-    }
-    setInterval(getSensors, 5000);
-  </script>
+
+    const data = await r.json();
+    updateSensors(data);
+    document.getElementById('output').value =
+      JSON.stringify(data, null, 2);
+  }
+
+  function updateSensors(data) {
+    document.getElementById('temp').textContent = data.temperature ?? '-';
+    document.getElementById('hum').textContent = data.humidity ?? '-';
+    document.getElementById('pres').textContent = data.pressure ?? '-';
+    document.getElementById('gas').textContent = data.gas ?? '-';
+    document.getElementById('sound').textContent =
+      data.sound ? "YES" : "NO";
+    document.getElementById('vibration').textContent =
+      data.vibration ? "YES" : "NO";
+  }
+
+  // Auto-refresh every 5s
+  setInterval(getSensors, 5000);
+</script>
+
 </body>
 </html>

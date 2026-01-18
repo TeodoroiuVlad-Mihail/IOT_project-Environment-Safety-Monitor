@@ -63,6 +63,12 @@ SensorData readSensors() {
     d.gas = readGas();
     d.vibration = detectVibration();
     d.sound = detectSound();
+    Serial.println("Temperature: " + String(d.temperature));
+    Serial.println("Humidity: " + String(d.humidity));
+    Serial.println("Pressure: " + String(d.pressure));
+    Serial.println("Gas: " + String(d.gas));
+    Serial.println("Vibration: " + String(d.vibration));
+    Serial.println("Sound: " + String(d.sound));
     return d;
 }
 

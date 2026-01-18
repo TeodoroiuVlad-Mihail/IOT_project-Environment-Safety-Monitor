@@ -1,0 +1,3 @@
+Build, Upload and Monitor on the device
+
+Then, on the laptop: node server.js
