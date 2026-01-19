@@ -40,6 +40,7 @@ We will be using the following detectors:
 - 0104110000082152: sound
 
 Connected to the board as such:
+
 **Figure 1:** Diagram of sensors connected to the board
 ![ProbeDiagram](media/NodeDiagram.png)
 
@@ -62,6 +63,11 @@ Connected to the board as such:
 ## Software
 
 The software is organized in a distributed architecture consisting of sensor nodes and a central server.
+
+The server would have then been supposed to use a fireeye database to notify the user.
+
+**Figure 2:** The web app with independent data
+![OverallDiagram](media/OverallDiagram.png)
 
 
 ### Sensor Nodes (ESP32)
@@ -110,4 +116,15 @@ Alerts are triggered only while the web page is open, using Web Push.
 
 ### Testing and Results
 
-The web app without any data
+**Figure 4:** The two nodes, the primary one has all the sensors, the second only the BME one
+![Physical](media/Physical.jpg)
+
+**Figure 5:** The web app without any data
+![WebNoData](media/WebNoData.png)
+
+**Figure 6:** The web app with independent data
+![WebData](media/WebData.png)
+
+
+**Figure 7:** Video of the two probes sending data to the server
+![Video](media/Video.mp4)
