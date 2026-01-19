@@ -66,7 +66,7 @@ The software is organized in a distributed architecture consisting of sensor nod
 
 The server would have then been supposed to use a fireeye database to notify the user.
 
-**Figure 2:** The web app with independent data
+**Figure 2:** Overall Arhitecture diagram
 ![OverallDiagram](media/OverallDiagram.png)
 
 
