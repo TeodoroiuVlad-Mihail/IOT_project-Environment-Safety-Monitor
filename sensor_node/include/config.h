@@ -9,6 +9,3 @@
 
 // Thresholds for event detection
 #define SOUND_THRESHOLD 512
-
-// Node info
-#define NODE_ID       "sensor_1"

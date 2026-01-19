@@ -11,7 +11,9 @@
   "license": "ISC",
   "dependencies": {
     "coap": "^1.5.0",
-    "express": "^5.2.1"
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "web-push": "^3.6.7"
   },
   "description": ""
 }

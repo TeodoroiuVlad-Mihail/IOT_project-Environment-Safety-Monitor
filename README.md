@@ -41,12 +41,12 @@ We will be using the following detectors:
 
 Connected to the board as such:
 **Figure 1:** Diagram of sensors connected to the board
-![ProbeDiagram](images/NodeDiagram.png)
+![ProbeDiagram](media/NodeDiagram.png)
 
 
 | # | Component                         | Model                        | Quantity | Notes |
 |---|-----------------------------------|------------------------------|----------|-------|
-| 1 | Microcontroller                   | ESP32-                       | 2        | Probe center |
+| 1 | Microcontroller                   | Esp-32s v1.1 101010          | 2        | Probe center |
 | 2 | Temperature & Pressure Sensor     | BMP180                       | 2        | SDA & SCL |
 | 3 | Humidity Sensor                   | HR202                        | 2        | Digital output |
 | 4 | CO Detector                       | MQ-7                         | 2        | Analog output |
@@ -54,3 +54,60 @@ Connected to the board as such:
 | 4 | Sound Detector                    | 0104110000082152             | 2        | Analog output |
 | 5 | Cables                            | Mico-USB                     | 2        | Programming & Power supply|
 | 7 | Wires                             | Female-Female                | ~10      | Connections |
+
+
+
+---
+
+## Software
+
+The software is organized in a distributed architecture consisting of sensor nodes and a central server.
+
+
+### Sensor Nodes (ESP32)
+
+Each ESP32 acts as an independent CoAP server exposing the sensor values:
+
+- /sensors/temperature
+- /sensors/humidity
+- /sensors/pressure
+- /sensors/gas
+- /sensors/vibration
+- /sensors/sound
+
+The node firmware is structured into:
+
+- sensors.* – sensor drivers and data acquisition
+- net.* – Wi-Fi initialization and CoAP server logic
+- config.h – network credentials and configuration
+
+Sensor values are read on demand and returned as plain-text CoAP responses.
+
+### Central Server
+
+A Node.js server acts as a CoAP client for multiple sensor nodes and as an HTTP server for the web interface.
+
+- Periodically polls each node independently
+- Stores the latest known values per node
+- Continues operating even if one node becomes unreachable
+- Sends Web Push notifications when readings exceed thresholds (e.g., high CO, vibration, temperature anomalies). Notifications work while the browser is open on a desktop or mobile device.
+
+### Web Interface
+
+A simple HTML/JavaScript dashboard (index.html) displays:
+
+- Live sensor values for each node
+- Automatic refresh at fixed intervals
+- Raw JSON output for debugging
+- The web UI is accessible from both desktop and mobile devices on the same network.
+
+
+### Messaging
+
+Alerts are triggered only while the web page is open, using Web Push.
+
+---
+
+### Testing and Results
+
+The web app without any data
